@@ -21,8 +21,9 @@ Example:
     python booth_free_dl.py "https://atelier-kotone.booth.pm/items/8103811"   # single link auto-detected
 
 Notes:
-- Only FREE variations are downloaded (variation price == 0 with public download url).
-  Paid items are never touched; no login/cookies required for free direct downloads.
+- Only FREE variations are downloaded (variation price == 0 with download url).
+  Paid items are never touched. Actual file download REQUIRES a login session cookie
+  (without it BOOTH returns a login-page HTML disguised as the file).
 - Idempotent: an item folder that already contains its files is skipped.
 - Respects HTTP(S)_PROXY env vars automatically (requests default behavior).
 """

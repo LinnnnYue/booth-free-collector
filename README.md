@@ -73,7 +73,7 @@ python booth_free_dl.py "https://atelier-kotone.booth.pm/items/8103811"
 | `--items` | 零散商品链接/ID（可重复传，或一次传空格/逗号/换行分隔的一坨） |
 | `--out` | 输出根目录，默认 `G:\Lin_File\Downloads\BOOTH` |
 | `--cookie` | **必需**（下载文件时）。原始 `k=v; k2=v2` 串 / cookies.txt / 存串的文本文件。会话 Cookie 真名是 `_plaza_session_nktz7u`，建议连同 `cf_clearance` 一起复制 |
-| `--ua` | 必须与产生 `cf_clearance` 的浏览器 UA 完全一致（Cloudflare 绑定 UA） |
+| `--ua` | 通常无需指定；实测下载仅需有效会话 Cookie，默认 UA 即可（仅 Cloudflare 挑战页需与浏览器一致） |
 | `--dry-run` | 只列出将下载的免费商品，不写盘（新源建议先 dry-run 确认） |
 | `--limit N` | 最多处理 N 个免费商品 |
 | `--folder-by` | `category`（默认，按分类中文名）或 `first-tag`（按第一个标签）分组 |
