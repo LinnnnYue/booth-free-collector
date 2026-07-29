@@ -16,7 +16,7 @@ BOOTH 的免费文件下载 **必须登录**（不登录会返回伪装成 zip/p
 因此运行脚本时，你需要 **自己** 从浏览器复制 BOOTH 的登录 Cookie，通过 `--cookie` 参数传入：
 
 ```bash
-python booth_free_dl.py "https://xxx.booth.pm/" --cookie "你的cookie串"
+python scripts/booth_free_dl.py "https://xxx.booth.pm/" --cookie "你的cookie串"
 ```
 
 Cookie 只在你本地、本次运行中使用，**不要**提交到任何仓库或发给他人。
@@ -33,6 +33,9 @@ cd booth-free-collector
 python -m venv .venv
 .venv\Scripts\activate        # Windows
 pip install requests pillow
+
+# 脚本在 scripts/ 目录下，运行需加路径前缀
+# python scripts/booth_free_dl.py ...
 ```
 
 > 代理：脚本使用 `requests`，会自动读取 `HTTPS_PROXY` 环境变量。
@@ -45,13 +48,13 @@ pip install requests pillow
 ### 1. 按店铺整店下载
 
 ```bash
-python booth_free_dl.py "https://atelier-kotone.booth.pm/" --out "G:/Lin_File/Downloads/BOOTH"
+python scripts/booth_free_dl.py "https://atelier-kotone.booth.pm/" --out "G:/Lin_File/Downloads/BOOTH"
 ```
 
 ### 2. 好友 / 群里分享的零散链接（自动判定为「散链模式」）
 
 ```bash
-python booth_free_dl.py --items \
+python scripts/booth_free_dl.py --items \
   "https://atelier-kotone.booth.pm/items/6574952" \
   "https://booth.pm/ja/items/6574953" \
   "8103811"        # 裸 ID 也行
@@ -60,7 +63,7 @@ python booth_free_dl.py --items \
 ### 3. 单条商品链接直接丢进去
 
 ```bash
-python booth_free_dl.py "https://atelier-kotone.booth.pm/items/8103811"
+python scripts/booth_free_dl.py "https://atelier-kotone.booth.pm/items/8103811"
 ```
 
 脚本根据输入 **自动判定** 整店 / 散链，无需手动指定模式。
