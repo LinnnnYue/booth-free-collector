@@ -28,9 +28,9 @@ Notes:
 - Respects HTTP(S)_PROXY env vars automatically (requests default behavior).
 """
 import argparse
-import ctypes
 import json
 import os
+import platform
 import re
 import sys
 import time
@@ -194,11 +194,16 @@ def load_cookie(session: requests.Session, cookie_arg: str):
 
 
 def set_attrs(path: Path, attrs: int):
+    if platform.system() != "Windows":
+        return
+    import ctypes
     ctypes.windll.kernel32.SetFileAttributesW(str(path), attrs)
 
 
 def make_folder_icon(folder: Path, cover: Path):
     """cover image -> .ico + desktop.ini so Explorer large-icon view shows it."""
+    if platform.system() != "Windows":
+        return
     try:
         from PIL import Image
     except ImportError:
