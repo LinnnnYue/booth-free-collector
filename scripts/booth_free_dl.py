@@ -230,9 +230,9 @@ def main():
     ap.add_argument("shop", nargs="?",
                     help="shop URL/subdomain (crawl whole shop) OR a single item link. "
                          "If it contains /items/<id>, discrete mode is auto-selected.")
-    ap.add_argument("--items", action="append", default=[], metavar="LINKS",
-                    help="discrete item link(s)/ID(s) from friends/groups; repeatable, or one value "
-                         "with space/comma/newline separated ids. Auto-detected as item mode.")
+    ap.add_argument("--items", nargs="+", default=[], metavar="LINKS",
+                    help="discrete item link(s)/ID(s) from friends/groups. "
+                         "Multiple values separated by spaces, or one string with comma/newline separated ids.")
     ap.add_argument("--out", default=r"./booth_downloads")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--limit", type=int, default=0)
