@@ -40,6 +40,7 @@ import requests
 
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"}
 INVALID = r'<>:"/\\|?*'
+MAX_RETRIES = 3
 
 # BOOTH category name -> Chinese folder name
 CATEGORY_MAP = {
@@ -70,6 +71,21 @@ def log(msg):
         print(msg, flush=True)
     except UnicodeEncodeError:
         print(msg.encode("utf-8", "replace").decode("utf-8", "replace"), flush=True)
+
+
+def retry_request(method, url, session, **kwargs):
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            r = session.request(method, url, **kwargs)
+            r.raise_for_status()
+            return r
+        except (requests.ConnectionError, requests.Timeout, requests.exceptions.ChunkedEncodingError) as e:
+            if attempt < MAX_RETRIES:
+                wait = attempt * 2
+                log(f"    ! 请求失败 (attempt {attempt}/{MAX_RETRIES}), {wait}s 后重试: {e}")
+                time.sleep(wait)
+            else:
+                raise
 
 
 def sanitize(name: str, max_len: int = 70) -> str:
@@ -106,7 +122,7 @@ def crawl_item_ids(sub: str, session: requests.Session) -> list:
     while True:
         # NOTE: shop root "/" is behind a Cloudflare challenge; "/items" is not.
         url = f"https://{sub}.booth.pm/items?page={page}"
-        r = session.get(url, headers=UA, timeout=30)
+        r = retry_request("GET", url, session, headers=UA, timeout=30)
         if r.status_code != 200:
             break
         found = re.findall(r'href="https?://[^"]*/items/(\d+)"', r.text) or re.findall(r'/items/(\d+)', r.text)
@@ -122,9 +138,8 @@ def crawl_item_ids(sub: str, session: requests.Session) -> list:
 
 
 def fetch_item(item_id: str, session: requests.Session) -> dict:
-    r = session.get(f"https://booth.pm/ja/items/{item_id}.json",
-                    headers={**UA, "Accept": "application/json"}, timeout=30)
-    r.raise_for_status()
+    r = retry_request("GET", f"https://booth.pm/ja/items/{item_id}.json", session,
+                      headers={**UA, "Accept": "application/json"}, timeout=30)
     return r.json()
 
 
@@ -157,11 +172,24 @@ def valid_file(path: Path) -> bool:
 
 def download(url: str, dest: Path, session: requests.Session, check_html: bool = False):
     tmp = dest.with_suffix(dest.suffix + ".part")
-    with session.get(url, headers=UA, stream=True, timeout=120) as r:
-        r.raise_for_status()
-        with open(tmp, "wb") as fh:
-            for chunk in r.iter_content(1 << 16):
-                fh.write(chunk)
+    last_err = None
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            with session.get(url, headers=UA, stream=True, timeout=120) as r:
+                r.raise_for_status()
+                with open(tmp, "wb") as fh:
+                    for chunk in r.iter_content(1 << 16):
+                        fh.write(chunk)
+            last_err = None
+            break
+        except (requests.ConnectionError, requests.Timeout, requests.exceptions.ChunkedEncodingError) as e:
+            last_err = e
+            if attempt < MAX_RETRIES:
+                wait = attempt * 2
+                log(f"    ! 下载失败 (attempt {attempt}/{MAX_RETRIES}), {wait}s 后重试: {e}")
+                time.sleep(wait)
+    if last_err:
+        raise last_err
     if check_html:
         with open(tmp, "rb") as fh:
             if looks_html(fh.read(256)):
