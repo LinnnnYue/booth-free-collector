@@ -233,7 +233,7 @@ def main():
     ap.add_argument("--items", action="append", default=[], metavar="LINKS",
                     help="discrete item link(s)/ID(s) from friends/groups; repeatable, or one value "
                          "with space/comma/newline separated ids. Auto-detected as item mode.")
-    ap.add_argument("--out", default=r"G:\Lin_File\Downloads\BOOTH")
+    ap.add_argument("--out", default=r"./booth_downloads")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--folder-by", choices=["category", "first-tag"], default="category",
