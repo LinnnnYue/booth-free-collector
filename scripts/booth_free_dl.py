@@ -206,14 +206,18 @@ def load_cookie(session: requests.Session, cookie_arg: str):
     p = Path(cookie_arg)
     if p.is_file():
         text = p.read_text(encoding="utf-8", errors="ignore").strip()
-        if "\t" in text:  # Netscape format
+        # Netscape cookies.txt: 7 tab-separated fields, first line starts with domain
+        if any("\t" in line and not line.startswith("#") for line in text.splitlines()):
+            loaded = 0
             for line in text.splitlines():
                 if line.startswith("#") or not line.strip():
                     continue
                 parts = line.split("\t")
                 if len(parts) >= 7 and "booth" in parts[0]:
                     session.cookies.set(parts[5], parts[6], domain=parts[0])
-            return
+                    loaded += 1
+            if loaded > 0:
+                return
         cookie_arg = text  # raw cookie header string in a file
     for pair in cookie_arg.split(";"):
         if "=" in pair:
