@@ -1,6 +1,6 @@
 ---
 name: booth-free-collector
-description: BOOTH 免费商品批量下载与归档。给定 BOOTH 店铺链接（如 https://xxx.booth.pm/）自动爬全店，或接收好友/群里分享的【零散商品链接】——脚本自动判定输入类型（整店 / 散链），筛选 0 円免费商品、下载全部免费文件，按「商品分类(文件夹)/商品ID_标题/」结构归档到 G:\Lin_File\Downloads\BOOTH，每个商品文件夹内含 cover.jpg 封面并自动设置为 Windows 文件夹图标（大图标视图可直接预览）。触发词：booth、booth下载、免费商品下载、VRChat免费素材、booth归档、下载booth店铺、免费鸡蛋、下载鸡蛋、领鸡蛋、白嫖鸡蛋、下载散链、散的链接、朋友发的booth（"免费鸡蛋/蛋"是 VRChat 社区梗，指 BOOTH 上的免费商品/素材）。
+description: BOOTH 免费商品批量下载与归档。给定 BOOTH 店铺链接（如 https://xxx.booth.pm/）自动爬全店，或接收好友/群里分享的【零散商品链接】——脚本自动判定输入类型（整店 / 散链），筛选 0 円免费商品、下载全部免费文件，按「商品分类(文件夹)/商品ID_标题/」结构归档，每个商品文件夹内含 cover.jpg 封面并自动设置为 Windows 文件夹图标（大图标视图可直接预览）。触发词：booth、booth下载、免费商品下载、VRChat免费素材、booth归档、下载booth店铺、免费鸡蛋、下载鸡蛋、领鸡蛋、白嫖鸡蛋、下载散链、散的链接、朋友发的booth（"免费鸡蛋/蛋"是 VRChat 社区梗，指 BOOTH 上的免费商品/素材）。
 ---
 
 # BOOTH Free Collector — BOOTH 免费商品批量下载归档
@@ -37,25 +37,22 @@ description: BOOTH 免费商品批量下载与归档。给定 BOOTH 店铺链接
 
 ```bash
 # 按店铺整店下载
-"C:/Users/19388/.workbuddy/binaries/python/envs/default/Scripts/python.exe" \
-  "G:/Lin_File/Documents/Skills/booth-free-collector/scripts/booth_free_dl.py" \
-  "https://atelier-kotone.booth.pm/" \
-  --out "G:/Lin_File/Downloads/BOOTH"
+python scripts/booth_free_dl.py "https://atelier-kotone.booth.pm/" --out "./booth_downloads"
 
 # 朋友/群里分享的零散链接（自动判定为散链模式）
-python booth_free_dl.py --items \
+python scripts/booth_free_dl.py --items \
   "https://atelier-kotone.booth.pm/items/6574952" \
   "https://booth.pm/ja/items/6574953" \
   "8103811"   # 裸 ID 也可
 
 # 单条商品链接直接丢进去也行
-python booth_free_dl.py "https://atelier-kotone.booth.pm/items/8103811"
+python scripts/booth_free_dl.py "https://atelier-kotone.booth.pm/items/8103811"
 ```
 
 参数：
 - `shop`：店铺 URL 或子域名（`atelier-kotone` 等价于完整 URL）；若值含 `/items/<id>` 则自动转散链模式
-- `--items`：零散商品链接/ID（可重复传，或一次传空格/逗号/换行分隔的一坨；好友分享的链接贴这里）
-- `--out`：输出根目录，默认 `G:\Lin_File\Downloads\BOOTH`
+- `--items`：零散商品链接/ID（可传多个，空格分隔；或一条字符串内逗号/换行分隔；好友分享的链接贴这里）
+- `--out`：输出根目录，默认 `./booth_downloads`
 - `--cookie`：**必需**（下载文件时）。三种形式：原始 Cookie 串 / Netscape cookies.txt 路径 / 存有原始 Cookie 串的文本文件路径。**会话 Cookie 真名是 `_plaza_session_nktz7u`**（不是 _plaz_session），建议直接从浏览器 F12 → Network 复制整条 Cookie 头（连同 `cf_clearance` 一起）
 - `--ua`：**通常无需指定**。实测 `downloadables` 下载端点只校验有效会话 cookie（`_plaza_session_nktz7u`），默认 UA 即可正常下载；仅当遇到 Cloudflare 挑战页（如店铺根 `/`）时才需与浏览器 UA 一致。保留作可选保险。
 - `--dry-run`：只列出将下载的免费商品，不写盘（**新店铺建议先 dry-run 给用户确认**）
@@ -64,8 +61,8 @@ python booth_free_dl.py "https://atelier-kotone.booth.pm/items/8103811"
 
 ## 依赖
 
-- Python venv：`C:\Users\19388\.workbuddy\binaries\python\envs\default`（需 `requests`、`pillow`，已安装）
-- 网络代理：requests 自动读取 `HTTPS_PROXY` 环境变量（本机 WorkBuddy 会话自带；直连 booth.pm 可能 SSL 握手失败，务必保留 env 代理）
+- Python 3.10+（需 `requests`、`pillow` 库）
+- 网络代理：requests 自动读取 `HTTPS_PROXY` 环境变量（直连 booth.pm 可能 SSL 握手失败，建议配置代理）
 
 ## 关键经验 / 注意事项
 
@@ -79,13 +76,13 @@ python booth_free_dl.py "https://atelier-kotone.booth.pm/items/8103811"
 - 请求间隔 0.6~0.8s，礼貌爬取，勿并发轰炸 booth.pm。
 - **代理瞬断**：本地代理（HTTPS_PROXY env）偶发 ProxyError 导致个别文件失败——直接**再跑一遍**即可，幂等重跑只补失败文件（末尾有 FAILED 清单）。
 - 实际文件下载 302 到 `s6.booth.pm`（S3 签名 URL，180 秒时效），Cookie 只在第一跳 booth.pm 需要。
-- 输出目录位于个人下载盘（G:\Lin_File\Downloads），本技能**只新增文件，绝不删除/移动已有文件**。
+- 本技能**只新增文件，绝不删除/移动已有文件**。
 - 控制台若出现日文乱码，用 `PYTHONIOENCODING=utf-8` 运行。
 
 ## 输出结构示例
 
 ```
-G:\Lin_File\Downloads\BOOTH\
+<输出根目录>/
 ├── 3D饰品\
 │   └── 7603673_【FREE】あったかニット帽🧶\
 │       ├── ニット帽_v1.1.zip
@@ -95,5 +92,5 @@ G:\Lin_File\Downloads\BOOTH\
 ├── 3D贴图\
 ├── 3D服装\
 ├── 海报\
-└── manifest_atelier-kotone.json
+└── manifest_<店铺>.json
 ```
