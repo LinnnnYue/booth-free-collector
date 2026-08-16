@@ -1,0 +1,21 @@
+# ===== booth-toolkit 仓库级忽略 =====
+# 绝对禁止上传任何登录凭据！
+*_cookie.txt
+*_session*
+*session*.txt
+.booth_cookie.txt
+cookie*.txt
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 临时 / 回收站
+._booth_trash/
+*.tmp
+.DS_Store
+
+# 本地环境配置（若含敏感信息）
+.env
+*.local
